@@ -1,20 +1,7 @@
 from django.contrib import admin
 from .models import Question, Chapter, Section, Examination, DayAttendance, SectionQuestion, DayQuestion, ExamQuestion
-
-
-class SectionQuestionInline(admin.TabularInline):
-    model = SectionQuestion
-    extra = 1
-
-
-class DayQuestionInline(admin.TabularInline):
-    model = DayQuestion
-    extra = 1
-
-
-class ExamQuestionInline(admin.TabularInline):
-    model = ExamQuestion
-    extra = 1
+from django.urls import reverse
+from django.utils.html import format_html
 
 
 @admin.register(Chapter)
@@ -25,12 +12,18 @@ class ChapterAdmin(admin.ModelAdmin):
     ordering = ('number',)
 
     def get_sections_count(self, obj):
-        return obj.sections.count()
+        return format_html('<a target="_blank" href="{}">{} 查看节</a>'.format(reverse('admin:examination_section_changelist')+'?chapter__id={}'.format(obj.id), str(obj.sections.count()) ))
     get_sections_count.short_description = u'节数'
 
 
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
+
+    class SectionQuestionInline(admin.TabularInline):
+        model = SectionQuestion
+        extra = 1
+
+
     list_display = ('name', 'chapter', 'number', 'difficulty', 'is_keypoint', 'get_questions_count')
     search_fields = ('name', 'chapter__name')
     list_editable = ('is_keypoint', 'difficulty')
@@ -47,6 +40,11 @@ class SectionAdmin(admin.ModelAdmin):
 
 @admin.register(Examination)
 class ExaminationAdmin(admin.ModelAdmin):
+
+    class ExamQuestionInline(admin.TabularInline):
+        model = ExamQuestion
+        extra = 1
+
     list_display = ('name', 'number', 'exam_type', 'exam_time', 'get_questions_count')
     search_fields = ('name', 'exam_type')
     list_editable = ('exam_type', )
@@ -73,6 +71,11 @@ class QuestionAdmin(admin.ModelAdmin):
 
 @admin.register(DayAttendance)
 class DayAttendanceAdmin(admin.ModelAdmin):
+
+    class DayQuestionInline(admin.TabularInline):
+        model = DayQuestion
+        extra = 1
+
     list_display = ('create_time', 'analysis_file')
     search_fields = ('create_time',)
     list_filter = ('create_time',)
