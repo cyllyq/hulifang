@@ -12,7 +12,8 @@ class ChapterAdmin(admin.ModelAdmin):
     ordering = ('number',)
 
     def get_sections_count(self, obj):
-        return format_html('<a target="_blank" href="{}">{} 查看节</a>'.format(reverse('admin:examination_section_changelist')+'?chapter__id={}'.format(obj.id), str(obj.sections.count()) ))
+        return format_html('<a target="_blank" href="{}">{} 查看节</a>'.format(
+            reverse('admin:examination_section_changelist')+'?chapter__id={}'.format(obj.id), str(obj.sections.count())))
     get_sections_count.short_description = u'节数'
 
 
@@ -34,7 +35,8 @@ class SectionAdmin(admin.ModelAdmin):
     ordering = ('chapter__number', 'number')
 
     def get_questions_count(self, obj):
-        return obj.questions.count()
+        return format_html('<a target="_blank" href="{}">{} 查看题目</a>'.format(
+            reverse('admin:examination_question_changelist')+'?section__id={}'.format(obj.id), str(obj.questions.count())))
     get_questions_count.short_description = u'题数'
 
 
@@ -54,7 +56,8 @@ class ExaminationAdmin(admin.ModelAdmin):
     ordering = ('number',)
 
     def get_questions_count(self, obj):
-        return obj.questions.count()
+        return format_html('<a target="_blank" href="{}">{} 查看题目</a>'.format(
+            reverse('admin:examination_question_changelist')+'?examination__id={}'.format(obj.id), str(obj.questions.count())))
     get_questions_count.short_description = u'题数'
 
 
@@ -68,6 +71,22 @@ class QuestionAdmin(admin.ModelAdmin):
     list_per_page = 20
     ordering = ('id',)
 
+    # actions = ['export_excel']
+
+    # def export_excel(self, request, queryset):
+    #     pass
+
+    # export_excel.short_description = '导入'
+    # export_excel.icon = 'fas fa-audio-description'
+    # export_excel.type = 'danger'
+    
+
+    # def lookup_allowed(self, key, value):
+    #     if key in ('examquestion__examination__id', ):
+    #         return True
+    #     return super(QuestionAdmin, self).lookup_allowed(key, value)
+
+
 
 @admin.register(DayAttendance)
 class DayAttendanceAdmin(admin.ModelAdmin):
@@ -76,9 +95,14 @@ class DayAttendanceAdmin(admin.ModelAdmin):
         model = DayQuestion
         extra = 1
 
-    list_display = ('create_time', 'analysis_file')
+    list_display = ('create_time', 'analysis_file', 'get_questions')
     search_fields = ('create_time',)
     list_filter = ('create_time',)
     inlines = (DayQuestionInline, )
     list_per_page = 20
     ordering = ('-create_time',)
+
+    def get_questions(self, obj):
+        return format_html('<a target="_blank" href="{}">查看题目</a>'.format(
+            reverse('admin:examination_question_changelist')+'?dayattendance__id={}'.format(obj.id)))
+    get_questions.short_description = u'题目'

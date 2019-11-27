@@ -87,7 +87,7 @@ class DayAttendance(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return '每日打卡' + self.create_time
+        return '每日打卡:' + str(self.create_time)
 
 
 class DayQuestion(models.Model):
