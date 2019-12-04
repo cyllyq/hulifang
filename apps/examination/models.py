@@ -10,16 +10,16 @@ class Question(models.Model):
     )
 
     question_type = models.PositiveIntegerField(default=0, choices=TYPE_CHOICE, verbose_name='题目类型')
-    title = models.CharField(db_index=True, max_length=200, verbose_name=u'题目')
-    stem = models.CharField(db_index=True, max_length=200, null=True, blank=True, verbose_name=u'题干')
+    title = models.CharField(db_index=True, max_length=1000, verbose_name=u'题目')
+    stem = models.CharField(db_index=True, max_length=1000, null=True, blank=True, verbose_name=u'题干')
     #number = models.IntegerField(verbose_name=u'序号')
     answer = models.CharField(max_length=1, verbose_name=u'答案')
-    analysis = models.CharField(max_length=500, verbose_name=u'解析')
-    choice_a = models.CharField(max_length=100, verbose_name=u'选项A')
-    choice_b = models.CharField(max_length=100, verbose_name=u'选项B')
-    choice_c = models.CharField(max_length=100, verbose_name=u'选项C')
-    choice_d = models.CharField(max_length=100, verbose_name=u'选项D')
-    choice_e = models.CharField(max_length=100, verbose_name=u'选项E')
+    analysis = models.CharField(max_length=1000, verbose_name=u'解析')
+    choice_a = models.CharField(max_length=200, verbose_name=u'选项A')
+    choice_b = models.CharField(max_length=200, verbose_name=u'选项B')
+    choice_c = models.CharField(max_length=200, verbose_name=u'选项C')
+    choice_d = models.CharField(max_length=200, verbose_name=u'选项D')
+    choice_e = models.CharField(max_length=200, verbose_name=u'选项E')
     image = models.CharField(max_length=100, null=True, blank=True, verbose_name=u'图片')
     video = models.CharField(max_length=100, null=True, blank=True, verbose_name=u'视频')
 
@@ -68,13 +68,18 @@ class Section(TimeModel):
 
 
 class SectionQuestion(TimeModel):
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='所属章节')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='题目')
     number = models.PositiveIntegerField(verbose_name='序号')
 
     class Meta:
+        verbose_name = u'章节题目关联'
+        verbose_name_plural = verbose_name
         ordering = ['number']
         unique_together = ['section', 'question']
+
+    def __str__(self):
+        return self.section.name
 
 
 class DayAttendance(models.Model):
@@ -91,13 +96,18 @@ class DayAttendance(models.Model):
 
 
 class DayQuestion(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    day_attendance = models.ForeignKey(DayAttendance, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='题目')
+    day_attendance = models.ForeignKey(DayAttendance, on_delete=models.CASCADE, verbose_name='每日打卡')
     number = models.PositiveIntegerField(verbose_name=u'序号')
 
     class Meta:
+        verbose_name = u'打卡题目关联'
+        verbose_name_plural = verbose_name
         ordering = ['number']
         unique_together = ['question', 'day_attendance']
+
+    def __str__(self):
+        return '每日打卡：' + str(self.day_attendance.create_time)
 
 
 class Examination(TimeModel):
@@ -120,10 +130,15 @@ class Examination(TimeModel):
 
 
 class ExamQuestion(TimeModel):
-    examination = models.ForeignKey(Examination, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    examination = models.ForeignKey(Examination, on_delete=models.CASCADE, verbose_name='所属试卷')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name=u'题目')
     number = models.PositiveIntegerField(verbose_name='序号')
 
     class Meta:
         ordering = ['number']
         unique_together = ['examination', 'question']
+        verbose_name = u'试卷题目关联'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.examination.name

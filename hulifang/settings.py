@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -115,6 +115,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'users.User'
 
+AUTHENTICATION_BACKENDS = [
+    'utils.backends.MobileBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -138,3 +143,17 @@ STATIC_URL = '/static/'
 #simpleui配置
 SIMPLEUI_HOME_INFO = False
 SIMPLEUI_HOME_TITLE = '护理坊'
+
+SIMPLEUI_ICON = {
+    '用户操作': 'far fa-user-circle',
+    '每日打卡成绩': 'far fa-star',
+    '试卷成绩': 'far fa-bookmark',
+    '每日打卡': 'far fa-sun',
+    '章': 'far fa-list-alt',
+    '节': 'fas fa-align-center',
+    '试卷': 'far fa-map',
+    '题目库': 'far fa-edit',
+}
+
+# SIMPLEUI_LOADING = True
+SIMPLEUI_ANALYSIS = False

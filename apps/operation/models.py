@@ -1,7 +1,7 @@
 from django.db import models
 from apps.abstract import TimeModel
 from django.conf import settings
-from examination.models import Question, Examination, DayAttendance, Section
+from examination.models import Question, Examination, DayAttendance, Section, SectionQuestion
 
 
 User = settings.AUTH_USER_MODEL
@@ -36,6 +36,7 @@ class QuestionFav(TimeModel):
 class WrongQuestion(TimeModel):
     user = models.ForeignKey(User, verbose_name=u'用户', on_delete=models.CASCADE)
     question = models.ForeignKey(Question, verbose_name=u'错题', on_delete=models.CASCADE)
+    wrong_count = models.PositiveIntegerField(default=1, verbose_name='错误次数')
 
     class Meta:
         verbose_name = u'错题集'
@@ -88,12 +89,12 @@ class DayScore(TimeModel):
 
 class SectionRecord(TimeModel):
     user = models.ForeignKey(User, verbose_name='用户', on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, verbose_name='做到哪一题', on_delete=models.CASCADE)
+    section_question = models.ForeignKey(SectionQuestion, verbose_name='做到哪一题', on_delete=models.CASCADE)
     section = models.ForeignKey(Section, verbose_name='所属节', on_delete=models.CASCADE)
-    is_done = models.BooleanField(default=False, verbose_name='是否做完')
+    #is_done = models.BooleanField(default=False, verbose_name='是否做完')
 
     class Meta:
-        verbose_name = '做到哪一题'
+        verbose_name = '章节记录'
         verbose_name_plural = verbose_name
 
     def __str__(self):

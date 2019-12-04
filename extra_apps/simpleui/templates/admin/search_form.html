@@ -17,6 +17,9 @@
     <div id="toolbar">
         <form id="changelist-search" method="get" onsubmit="preSubmit(this)">
             <input type="hidden" name="p" value=""/>
+            <!--{% for pair in cl.params.items %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}"/>
+            {% endfor %}-->
             <div class="simpleui-form"><!-- DIV needed for valid HTML -->
 
                 {% if cl.search_fields %}
@@ -101,7 +104,7 @@
                         {% if pair.0.0 == '_' or pair.0 == 'o'%}
                             <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}"/>
                         {% else %}
-                            <input type="hidden" class="form-params" data-name="{{ pair.0 }}" value="{{ pair.1 }}"/>
+                            <input type="hidden" class="form-params" name="{{ pair.0 }}" value="{{ pair.1 }}"/>
                         {% endif %}
                     {% endif %}
                 {% endfor %}
@@ -239,5 +242,8 @@
 {% else %}
     <form id="changelist-search" method="get">
         <input type="hidden" name="p" value=""/>
+        <!--{% for pair in cl.params.items %}
+        <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}"/>
+        {% endfor %}-->
     </form>
 {% endif %}
