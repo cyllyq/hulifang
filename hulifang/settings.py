@@ -89,7 +89,7 @@ DATABASES = {
         'NAME': 'hulifang',
         'USER': 'root',
         'PASSWORD': 'lyq930305',
-        'HOST': '127.0.0.1',
+        'HOST': '122.51.181.82',
         'PORT': '3306',
     }
 }

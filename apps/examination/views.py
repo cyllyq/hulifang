@@ -9,6 +9,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.db.models import Count, F, Value, IntegerField
 from apps.utils.tools import get_questions, correct_question_count
+from apps.decorators import login_required
 
 
 def section_list(request):
@@ -18,7 +19,10 @@ def section_list(request):
         
     }
     '''
-    rsp_data = {}
+    rsp_data = {
+        'code': 200,
+        'msg': '成功',    
+    }
     chapter_records = Chapter.objects.all().prefetch_related('sections',)
     data = {'chapters':[]}
 
@@ -60,7 +64,10 @@ def section_questions(request, section_id):
     '''
     返回章节所属题目
     '''
-    rsp_data = {}
+    rsp_data = {
+        'code': 200,
+        'msg': '成功',    
+    }
     data = {
         'section_id': section_id,
         'questions': [],
@@ -84,7 +91,10 @@ def exam_list(request):
     '''
     返回试卷列表
     '''
-    rsp_data = {}
+    rsp_data = {
+        'code': 200,
+        'msg': '成功',    
+    }
     data = {
         'exam': [],
     }
@@ -107,13 +117,18 @@ def exam_list(request):
         content_type="application/json, charset=utf-8")
 
 
+@login_required
 def examination(request, exam_id):
     '''
     获取试卷题目
     '''
     #get方法返回试卷题目
+    
     if request.method == 'GET':
-        rsp_data = {}
+        rsp_data = {
+            'code': 200,
+            'msg': '成功',    
+        }   
         data = {
             'exam_id': exam_id,
             'questions': [],
@@ -125,8 +140,8 @@ def examination(request, exam_id):
             'with_analysis': False,
             'with_answer': False,
         }
-        if request.user.is_authenticated:
-            kwargs['user'] = user
+        #if request.user.is_authenticated:
+        kwargs['user'] = user
 
         data['questions'] = get_questions(**kwargs)
         rsp_data['data'] = data
@@ -135,7 +150,10 @@ def examination(request, exam_id):
 
     #post方法计算试卷分数
     elif request.method == 'POST':
-        rsp_data = {}
+        rsp_data = {
+            'code': 200,
+            'msg': '成功',    
+        }
         questions = json.loads(request.body.decode('utf-8'))
 
         total, right_count = correct_question_count(questions, related=exam_id, question_type='exam')
@@ -154,6 +172,7 @@ def examination(request, exam_id):
             content_type="application/json, charset=utf-8")
 
 
+@login_required
 def dayattendance(request):
     '''
     获取每日打卡题目
@@ -161,7 +180,10 @@ def dayattendance(request):
     #get方法返回每日打卡题目
     if request.method == 'GET':
         day = datetime.date.today()
-        rsp_data = {}
+        rsp_data = {
+            'code': 200,
+            'msg': '成功',    
+        }
         data = {
             'day': str(day),
             'questions': [],
@@ -171,8 +193,8 @@ def dayattendance(request):
             'related': day,
             'question_type': 'day',
         }
-        if request.user.is_authenticated:
-            kwargs['user'] = request.user
+        #if request.user.is_authenticated:
+        kwargs['user'] = request.user
 
         data['questions'] = get_questions(**kwargs)
         rsp_data['data'] = data
@@ -181,13 +203,18 @@ def dayattendance(request):
 
     #post方法计算每日打卡分数
     elif request.method == 'POST':
-        rsp_data = {}
+        rsp_data = {
+            'code': 200,
+            'msg': '成功',    
+        }
         request_data = json.loads(request.body.decode('utf-8'))
         questions = request_data['questions']
         day = request_data['day']
         related = datetime.date.today()
         if day != str(related):
-            return '已过打卡时间'
+            rsp_data['code'] = 202
+            rsp_data['msg'] = '已过打卡时间'
+            return HttpResponse(json.dumps(rsp_data, ensure_ascii=False), content_type='application/json, charset=utf-8')
 
         total, right_count = correct_question_count(questions, related=related, question_type='day')
 
@@ -197,7 +224,9 @@ def dayattendance(request):
         try:
             dayattendance = DayAttendance.objects.get(create_time=related)
         except DayAttendance.DoesNotExist:
-            return '打卡不存在'
+            rsp_data['code'] = 203
+            rsp_data['msg'] = '打卡不存在'
+            return HttpResponse(json.dumps(rsp_data, ensure_ascii=False), content_type='application/json, charset=utf-8')
 
         DayScore.objects.update_or_create(user=request.user, day_attendance=dayattendance, defaults={'score': score})
 
@@ -210,36 +239,52 @@ def dayattendance(request):
             content_type="application/json, charset=utf-8")
 
 
+@login_required
 def section_record(request, section_id):
     '''
     记录章节的答题位置
     '''
     if request.method == 'POST':
+        rsp_data = {
+            'code': 200,
+            'msg': '成功',    
+        }
         question_id = request.POST.get('question_id')
         SectionRecord.objects.update_or_create(user=request.user, section__id=section_id, defaults={'section_question': question_id})
-        return '记录成功'
+        return HttpResponse(json.dumps(rsp_data, ensure_ascii=False), content_type='application/json, charset=utf-8')
 
 
+@login_required
 def question_fav(request, question_id):
     '''
     用户问题收藏
     '''
     if request.method == 'POST':
-        if request.user.is_authenticated:
-            obj, created = QuestionFav.objects.get_or_create(user=request.user, question_id=question_id)
-            if created:
-                return '收藏成功'
-            else:
-                obj.delete()
-                return '取消收藏'
+        #if request.user.is_authenticated:
+        rsp_data = {
+            'code': 200,
+            'msg': '',    
+        }
+        obj, created = QuestionFav.objects.get_or_create(user=request.user, question_id=question_id)
+        if created:
+            rsp_data['msg'] = '收藏成功'
+        else:
+            obj.delete()
+            rsp_data['msg'] = '取消收藏'
+        return HttpResponse(json.dumps(rsp_data, ensure_ascii=False), content_type='application/json, charset=utf-8')
 
 
+@login_required
 def add_wrong_question(request, question_id):
     '''
     添加错题记录，存在则增加错误次数
     '''
-    if request.user.is_authenticated:
-        #存在则增加错误次数
-        WrongQuestion.objects.update_or_create(user=request.user, question_id=question_id, defaults={'wrong_count': F('wrong_count')+1})
-        return HttpResponse(json.dumps({}, ensure_ascii=False), 
-            content_type="application/json, charset=utf-8")
+    #if request.user.is_authenticated:
+    #存在则增加错误次数
+    rsp_data = {
+        'code': 200,
+        'msg': '成功',    
+    }
+    WrongQuestion.objects.update_or_create(user=request.user, question_id=question_id, defaults={'wrong_count': F('wrong_count')+1})
+    return HttpResponse(json.dumps(rsp_data, ensure_ascii=False), 
+        content_type="application/json, charset=utf-8")
